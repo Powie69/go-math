@@ -5,6 +5,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"log"
 	"math/rand"
+	"os"
 	"strconv"
 )
 
@@ -15,6 +16,35 @@ var (
 )
 
 func main() {
+	for {
+		makePrompt()
+
+		switch input {
+		case 0:
+			gameLoop()
+		case 1:
+			setRange()
+		case 2:
+			fmt.Println("Goodbye!")
+			os.Exit(0)
+		}
+	}
+}
+
+func gameLoop() {
+	for {
+		guess := askQuestion()
+
+		if guess == "q" {
+			break
+		}
+
+		fmt.Println(guess)
+		fmt.Println(isValidNumber(guess))
+	}
+}
+
+func makePrompt() {
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[int]().
@@ -22,17 +52,34 @@ func main() {
 				Options(
 					huh.NewOption("Start", 0),
 					huh.NewOption("Set range", 1),
-					huh.NewOption("Set seed", 2),
+					huh.NewOption("Quit", 2),
 				).
 				Value(&input),
 		),
 	)
 
-	for {
-		if err := form.Run(); err != nil {
-			log.Fatal(err)
-		}
+	if err := form.Run(); err != nil {
+		log.Fatal(err)
 	}
+}
+
+func askQuestion() (guess string) {
+	_, question := makeQuestion()
+
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title(fmt.Sprintf("What's %s", question)).
+				Prompt("= ").
+				Value(&guess),
+		),
+	)
+
+	if err := form.Run(); err != nil {
+		log.Fatal(err)
+	}
+
+	return guess
 }
 
 func makeQuestion() (int, string) {
