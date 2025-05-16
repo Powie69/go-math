@@ -7,9 +7,11 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var (
+	ranges  = []int{}
 	input   int
 	minimum int = 1
 	maximum int = 9
@@ -33,7 +35,7 @@ func main() {
 
 func gameLoop() {
 	for {
-		guess := askQuestion()
+		answer, guess := askQuestion()
 
 		if guess == "q" {
 			break
@@ -41,6 +43,17 @@ func gameLoop() {
 
 		fmt.Println(guess)
 		fmt.Println(isValidNumber(guess))
+		isValid, guessInt := isValidNumber(guess)
+		guess = ""
+		if !isValid {
+			fmt.Printf("not a valid number  %s", guess)
+			continue
+		}
+		if guessInt == answer {
+			println("correct")
+			continue
+		}
+		println("WRONG!")
 	}
 }
 
@@ -63,8 +76,8 @@ func makePrompt() {
 	}
 }
 
-func askQuestion() (guess string) {
-	_, question := makeQuestion()
+func askQuestion() (answer int, guess string) {
+	answer, question := makeQuestion()
 
 	form := huh.NewForm(
 		huh.NewGroup(
@@ -75,11 +88,13 @@ func askQuestion() (guess string) {
 		),
 	)
 
-	if err := form.Run(); err != nil {
+	err := form.Run()
+
+	if err != nil {
 		log.Fatal(err)
 	}
 
-	return guess
+	return answer, guess
 }
 
 func makeQuestion() (int, string) {
@@ -88,7 +103,41 @@ func makeQuestion() (int, string) {
 }
 
 func setRange() {
+	userInput := ""
 
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Select Ranges").
+				Value(&userInput),
+		),
+	)
+
+	err := form.Run()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if userInput == "" {
+		fmt.Println("enter something idiot")
+		return
+	}
+
+	args := strings.Fields(userInput)
+	intRanges := make([]int, len(args))
+
+	for i, s := range args {
+		valid, val := isValidNumber(s)
+		if !valid {
+			fmt.Printf("%q is not a valid value\n", s)
+			return
+		}
+		intRanges[i] = val
+	}
+
+	ranges = intRanges
+	fmt.Printf("Ranges set to: %v\n", ranges)
 }
 
 func isValidNumber(s string) (bool, int) {
