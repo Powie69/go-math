@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	ranges  = []int{}
-	input   int
-	minimum int = 1
-	maximum int = 9
+	isRangeToggled bool
+	ranges         []int
+	input          int
+	minimum        int = 1
+	maximum        int = 9
 )
 
 func main() {
@@ -27,6 +28,8 @@ func main() {
 		case 1:
 			setRange()
 		case 2:
+			isRangeToggled = !isRangeToggled
+		case 3:
 			fmt.Println("Goodbye!")
 			os.Exit(0)
 		}
@@ -35,25 +38,26 @@ func main() {
 
 func gameLoop() {
 	for {
-		answer, guess := askQuestion()
+		answer, guess, questionString := askQuestion()
 
-		if guess == "q" {
+		if guess == "" {
+			println("Enter something idiot")
+		}
+
+		if guess == "q" || guess == "x" || guess == "l" {
 			break
 		}
 
-		fmt.Println(guess)
-		fmt.Println(isValidNumber(guess))
 		isValid, guessInt := isValidNumber(guess)
-		guess = ""
 		if !isValid {
-			fmt.Printf("not a valid number  %s", guess)
+			fmt.Printf("not a valid number %s\n", guess)
 			continue
 		}
 		if guessInt == answer {
 			println("correct")
 			continue
 		}
-		println("WRONG!")
+		fmt.Printf("WRONG!\n d %s = %d\n", questionString, answer)
 	}
 }
 
@@ -65,8 +69,10 @@ func makePrompt() {
 				Options(
 					huh.NewOption("Start", 0),
 					huh.NewOption("Set range", 1),
-					huh.NewOption("Quit", 2),
+					huh.NewOption("Toggle range", 2),
+					huh.NewOption("Quit", 3),
 				).
+				Description(fmt.Sprintf("Range: %s", map[bool]string{true: "✔️", false: "✖️"}[isRangeToggled])).
 				Value(&input),
 		),
 	)
@@ -76,7 +82,7 @@ func makePrompt() {
 	}
 }
 
-func askQuestion() (answer int, guess string) {
+func askQuestion() (answer int, guess string, questionString string) {
 	answer, question := makeQuestion()
 
 	form := huh.NewForm(
@@ -89,18 +95,26 @@ func askQuestion() (answer int, guess string) {
 	)
 
 	err := form.Run()
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return answer, guess
+	return answer, guess, question
 }
 
-func makeQuestion() (int, string) {
+func makeQuestion() (answer int, question string) {
+	if isRangeToggled {
+		first, second := ranges[rand.Intn(len(ranges))], rand.Intn(maximum-minimum)+minimum
+		return first + second, fmt.Sprintf("%d + %d", first, second)
+	}
 	first, second := rand.Intn(maximum-minimum)+minimum, rand.Intn(maximum-minimum)+minimum
 	return first + second, fmt.Sprintf("%d + %d", first, second)
 }
+
+// uncomment when 4+ uses
+//func toggleRange() {
+//	isRangeToggled = !isRangeToggled
+//}
 
 func setRange() {
 	userInput := ""
@@ -134,6 +148,10 @@ func setRange() {
 			return
 		}
 		intRanges[i] = val
+	}
+
+	if !isRangeToggled {
+		isRangeToggled = true
 	}
 
 	ranges = intRanges
