@@ -42,6 +42,7 @@ func gameLoop() {
 
 		if guess == "" {
 			println("Enter something idiot")
+			continue
 		}
 
 		if guess == "q" || guess == "x" || guess == "l" {
@@ -103,12 +104,16 @@ func askQuestion() (answer int, guess string, questionString string) {
 }
 
 func makeQuestion() (answer int, question string) {
-	if isRangeToggled {
-		first, second := ranges[rand.Intn(len(ranges))], rand.Intn(maximum-minimum)+minimum
+	if !isRangeToggled {
+		first, second := rand.Intn(maximum-minimum)+minimum, rand.Intn(maximum-minimum)+minimum
 		return first + second, fmt.Sprintf("%d + %d", first, second)
 	}
-	first, second := rand.Intn(maximum-minimum)+minimum, rand.Intn(maximum-minimum)+minimum
-	return first + second, fmt.Sprintf("%d + %d", first, second)
+	first, second := ranges[rand.Intn(len(ranges))], rand.Intn(maximum-minimum)+minimum
+	if rand.Intn(2) == 0 {
+		return first + second, fmt.Sprintf("%d + %d", first, second)
+	} else {
+		return first + second, fmt.Sprintf("%d + %d", second, first)
+	}
 }
 
 // uncomment when 4+ uses
@@ -142,12 +147,12 @@ func setRange() {
 	intRanges := make([]int, len(args))
 
 	for i, s := range args {
-		valid, val := isValidNumber(s)
+		valid, value := isValidNumber(s)
 		if !valid {
 			fmt.Printf("%q is not a valid value\n", s)
 			return
 		}
-		intRanges[i] = val
+		intRanges[i] = value
 	}
 
 	if !isRangeToggled {
