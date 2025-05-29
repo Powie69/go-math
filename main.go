@@ -58,7 +58,7 @@ func gameLoop() {
 			println("correct")
 			continue
 		}
-		fmt.Printf("WRONG!\n d %s = %d\n", questionString, answer)
+		fmt.Printf("WRONG!\n> %s = %d\n", questionString, answer)
 	}
 }
 
@@ -115,11 +115,6 @@ func makeQuestion() (answer int, question string) {
 		return first + second, fmt.Sprintf("%d + %d", second, first)
 	}
 }
-
-// uncomment when 4+ uses
-//func toggleRange() {
-//	isRangeToggled = !isRangeToggled
-//}
 
 func setRange() {
 	userInput := ""
