@@ -37,6 +37,10 @@ func main() {
 }
 
 func gameLoop() {
+	if isRangeToggled && len(ranges) == 0 {
+		setRange()
+	}
+
 	for {
 		answer, guess, questionString := askQuestion()
 
@@ -63,22 +67,17 @@ func gameLoop() {
 }
 
 func makePrompt() {
-	form := huh.NewForm(
-		huh.NewGroup(
-			huh.NewSelect[int]().
-				Title("Welcome!").
-				Options(
-					huh.NewOption("Start", 0),
-					huh.NewOption("Set range", 1),
-					huh.NewOption("Toggle range", 2),
-					huh.NewOption("Quit", 3),
-				).
-				Description(fmt.Sprintf("Range: %s", map[bool]string{true: "✔️", false: "✖️"}[isRangeToggled])).
-				Value(&input),
-		),
-	)
-
-	if err := form.Run(); err != nil {
+	if err := huh.NewSelect[int]().
+		Title("Welcome!").
+		Options(
+			huh.NewOption("Start", 0),
+			huh.NewOption("Set range", 1),
+			huh.NewOption("Toggle range", 2),
+			huh.NewOption("Quit", 3),
+		).
+		Description(fmt.Sprintf("Range: %s", map[bool]string{true: "✔️", false: "✖️"}[isRangeToggled])).
+		Value(&input).
+		Run(); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -86,17 +85,11 @@ func makePrompt() {
 func askQuestion() (answer int, guess string, questionString string) {
 	answer, question := makeQuestion()
 
-	form := huh.NewForm(
-		huh.NewGroup(
-			huh.NewInput().
-				Title(fmt.Sprintf("What's %s", question)).
-				Prompt("= ").
-				Value(&guess),
-		),
-	)
-
-	err := form.Run()
-	if err != nil {
+	if err := huh.NewInput().
+		Title(fmt.Sprintf("\nWhat's %s", question)).
+		Prompt("= ").
+		Value(&guess).
+		Run(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -119,17 +112,10 @@ func makeQuestion() (answer int, question string) {
 func setRange() {
 	userInput := ""
 
-	form := huh.NewForm(
-		huh.NewGroup(
-			huh.NewInput().
-				Title("Select Ranges").
-				Value(&userInput),
-		),
-	)
-
-	err := form.Run()
-
-	if err != nil {
+	if err := huh.NewInput().
+		Title("Select Ranges").
+		Value(&userInput).
+		Run(); err != nil {
 		log.Fatal(err)
 	}
 
