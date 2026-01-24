@@ -20,7 +20,7 @@ var (
 
 func main() {
 	for {
-		makePrompt()
+		makeMenuPrompt()
 
 		switch input {
 		case 0:
@@ -49,7 +49,7 @@ func gameLoop() {
 			continue
 		}
 
-		if guess == "q" || guess == "x" || guess == "l" {
+		if guess == "q" || guess == "x" || guess == "l" || guess == "c" {
 			break
 		}
 
@@ -66,7 +66,7 @@ func gameLoop() {
 	}
 }
 
-func makePrompt() {
+func makeMenuPrompt() {
 	if err := huh.NewSelect[int]().
 		Title("Welcome!").
 		Options(
