@@ -14,8 +14,8 @@ var (
 	isRangeToggled bool
 	ranges         []int
 	input          int
-	minimum        int = 1
-	maximum        int = 9
+	minimum        = 1
+	maximum        = 9
 )
 
 func main() {
@@ -45,7 +45,7 @@ func gameLoop() {
 		answer, guess, questionString := askQuestion()
 
 		if guess == "" {
-			println("Enter something idiot")
+			println("Enter something")
 			continue
 		}
 
@@ -56,13 +56,12 @@ func gameLoop() {
 		isValid, guessInt := isValidNumber(guess)
 		if !isValid {
 			fmt.Printf("not a valid number %s\n", guess)
-			continue
 		}
 		if guessInt == answer {
 			println("correct")
 			continue
 		}
-		fmt.Printf("WRONG!\n> %s = %d\n", questionString, answer)
+		fmt.Printf("> %s = %d\n", questionString, answer)
 	}
 }
 
