@@ -10,26 +10,38 @@ import (
 	"strings"
 )
 
+type MenuAction int
+
 var (
-	isRangeToggled bool
-	ranges         []int
-	input          int
-	minimum        = 1
-	maximum        = 9
+	isRangeToggled  bool
+	ranges          []int
+	menuPromptInput MenuAction
+	minimum         = 1
+	maximum         = 9
+)
+
+const (
+	StartGame MenuAction = iota
+	SetRange
+	ToggleRange
+	SetBounds
+	Quit
 )
 
 func main() {
 	for {
 		makeMenuPrompt()
 
-		switch input {
-		case 0:
+		switch menuPromptInput {
+		case StartGame:
 			gameLoop()
-		case 1:
+		case SetRange:
 			setRange()
-		case 2:
+		case ToggleRange:
 			isRangeToggled = !isRangeToggled
-		case 3:
+		case SetBounds:
+			setBounds()
+		case Quit:
 			fmt.Println("Goodbye!")
 			os.Exit(0)
 		}
@@ -66,16 +78,17 @@ func gameLoop() {
 }
 
 func makeMenuPrompt() {
-	if err := huh.NewSelect[int]().
+	if err := huh.NewSelect[MenuAction]().
 		Title("Welcome!").
 		Options(
-			huh.NewOption("Start", 0),
-			huh.NewOption("Set range", 1),
-			huh.NewOption("Toggle range", 2),
-			huh.NewOption("Quit", 3),
+			huh.NewOption("Start", StartGame),
+			huh.NewOption("Set range", SetRange),
+			huh.NewOption("Toggle range", ToggleRange),
+			huh.NewOption("Set Bounds", SetBounds),
+			huh.NewOption("Quit", Quit),
 		).
 		Description(fmt.Sprintf("Range: %s", map[bool]string{true: "✔️", false: "✖️"}[isRangeToggled])).
-		Value(&input).
+		Value(&menuPromptInput).
 		Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -97,10 +110,10 @@ func askQuestion() (answer int, guess string, questionString string) {
 
 func makeQuestion() (answer int, question string) {
 	if !isRangeToggled {
-		first, second := rand.Intn(maximum-minimum)+minimum, rand.Intn(maximum-minimum)+minimum
+		first, second := rand.Intn(maximum-minimum+1)+minimum, rand.Intn(maximum-minimum)+minimum
 		return first + second, fmt.Sprintf("%d + %d", first, second)
 	}
-	first, second := ranges[rand.Intn(len(ranges))], rand.Intn(maximum-minimum)+minimum
+	first, second := ranges[rand.Intn(len(ranges))], rand.Intn(maximum-minimum+1)+minimum
 	if rand.Intn(2) == 0 {
 		return first + second, fmt.Sprintf("%d + %d", first, second)
 	} else {
@@ -113,6 +126,7 @@ func setRange() {
 
 	if err := huh.NewInput().
 		Title("Select Ranges").
+		Placeholder(strings.Trim(fmt.Sprint(ranges), "[]")).
 		Value(&userInput).
 		Run(); err != nil {
 		log.Fatal(err)
@@ -141,6 +155,38 @@ func setRange() {
 
 	ranges = intRanges
 	fmt.Printf("Ranges set to: %v\n", ranges)
+}
+
+func setBounds() {
+	userInputForMinimum, userInputForMaximum := "", ""
+
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Set minimum").
+				Placeholder(strconv.Itoa(minimum)).
+				Value(&userInputForMinimum),
+			huh.NewInput().
+				Title("Set maximum").
+				Placeholder(strconv.Itoa(maximum)).
+				Value(&userInputForMaximum),
+		),
+	)
+
+	err := form.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	isUserInputForMinimumValid, userInputForMinimumAsInt := isValidNumber(userInputForMinimum)
+	if isUserInputForMinimumValid {
+		minimum = userInputForMinimumAsInt
+	}
+
+	isUserInputForMaximumValid, userInputForMaximumAsInt := isValidNumber(userInputForMaximum)
+	if isUserInputForMaximumValid {
+		maximum = userInputForMaximumAsInt
+	}
 }
 
 func isValidNumber(s string) (bool, int) {
