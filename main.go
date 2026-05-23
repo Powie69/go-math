@@ -57,7 +57,7 @@ func gameLoop() {
 		answer, guess, questionString := askQuestion()
 
 		if guess == "" {
-			println("Enter something")
+			fmt.Println("Enter something")
 			continue
 		}
 
@@ -70,7 +70,7 @@ func gameLoop() {
 			fmt.Printf("not a valid number %s\n", guess)
 		}
 		if guessInt == answer {
-			println("correct")
+			fmt.Println("correct")
 			continue
 		}
 		fmt.Printf("> %s = %d\n", questionString, answer)
@@ -100,6 +100,7 @@ func askQuestion() (answer int, guess string, questionString string) {
 	if err := huh.NewInput().
 		Title(fmt.Sprintf("\nWhat's %s", question)).
 		Prompt("= ").
+		//Validate(validateNumber).
 		Value(&guess).
 		Run(); err != nil {
 		log.Fatal(err)
@@ -127,6 +128,7 @@ func setRange() {
 	if err := huh.NewInput().
 		Title("Select Ranges").
 		Placeholder(strings.Trim(fmt.Sprint(ranges), "[]")).
+		//Validate(validateNumber).
 		Value(&userInput).
 		Run(); err != nil {
 		log.Fatal(err)
@@ -158,18 +160,20 @@ func setRange() {
 }
 
 func setBounds() {
-	userInputForMinimum, userInputForMaximum := "", ""
+	var minInput, maxInput string
 
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
 				Title("Set minimum").
 				Placeholder(strconv.Itoa(minimum)).
-				Value(&userInputForMinimum),
+				Validate(validateNumber).
+				Value(&minInput),
 			huh.NewInput().
 				Title("Set maximum").
 				Placeholder(strconv.Itoa(maximum)).
-				Value(&userInputForMaximum),
+				Validate(validateNumber).
+				Value(&maxInput),
 		),
 	)
 
@@ -178,15 +182,31 @@ func setBounds() {
 		log.Fatal(err)
 	}
 
-	isUserInputForMinimumValid, userInputForMinimumAsInt := isValidNumber(userInputForMinimum)
-	if isUserInputForMinimumValid {
-		minimum = userInputForMinimumAsInt
+	newMin, newMax := minimum, maximum
+
+	if val, err := strconv.Atoi(minInput); err == nil {
+		newMin = val
+	}
+	if val, err := strconv.Atoi(maxInput); err == nil {
+		newMax = val
 	}
 
-	isUserInputForMaximumValid, userInputForMaximumAsInt := isValidNumber(userInputForMaximum)
-	if isUserInputForMaximumValid {
-		maximum = userInputForMaximumAsInt
+	if newMin >= newMax {
+		fmt.Printf("minimum must be less than maximum\n")
+		return
 	}
+
+	minimum, maximum = newMin, newMax
+}
+
+func validateNumber(s string) error {
+	if s == "" {
+		return nil
+	}
+	if _, err := strconv.Atoi(s); err != nil {
+		return fmt.Errorf("must be a number")
+	}
+	return nil
 }
 
 func isValidNumber(s string) (bool, int) {
