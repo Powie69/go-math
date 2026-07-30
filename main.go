@@ -50,7 +50,10 @@ func main() {
 
 func gameLoop() {
 	if isRangeToggled && len(ranges) == 0 {
-		setRange()
+		ok := setRange()
+		if !ok {
+			return
+		}
 	}
 
 	for {
@@ -122,7 +125,7 @@ func makeQuestion() (answer int, question string) {
 	}
 }
 
-func setRange() {
+func setRange() bool {
 	userInput := ""
 
 	if err := huh.NewInput().
@@ -136,7 +139,7 @@ func setRange() {
 
 	if userInput == "" {
 		fmt.Println("enter something idiot")
-		return
+		return false
 	}
 
 	args := strings.Fields(userInput)
@@ -146,7 +149,7 @@ func setRange() {
 		valid, value := isValidNumber(s)
 		if !valid {
 			fmt.Printf("%q is not a valid value\n", s)
-			return
+			return false
 		}
 		intRanges[i] = value
 	}
@@ -157,6 +160,7 @@ func setRange() {
 
 	ranges = intRanges
 	fmt.Printf("Ranges set to: %v\n", ranges)
+	return true
 }
 
 func setBounds() {
