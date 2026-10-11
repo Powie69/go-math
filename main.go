@@ -114,7 +114,7 @@ func askQuestion() (answer int, guess string, questionString string) {
 
 func makeQuestion() (answer int, question string) {
 	if !isRangeToggled {
-		first, second := rand.Intn(maximum-minimum+1)+minimum, rand.Intn(maximum-minimum)+minimum
+		first, second := rand.Intn(maximum-minimum+1)+minimum, rand.Intn(maximum-minimum+1)+minimum
 		return first + second, fmt.Sprintf("%d + %d", first, second)
 	}
 	first, second := ranges[rand.Intn(len(ranges))], rand.Intn(maximum-minimum+1)+minimum
